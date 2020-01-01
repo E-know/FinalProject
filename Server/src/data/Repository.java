@@ -5,7 +5,6 @@ public interface Repository {
 
     void broadCastClients(String data);
 
-    void connectDataBase();
 
     void closeServer();
 }

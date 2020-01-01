@@ -1,9 +1,10 @@
 package data.datasource.local;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import javax.swing.*;
+import javax.xml.crypto.Data;
 import java.sql.*;
 /*
     Database Info
@@ -33,32 +34,36 @@ import java.sql.*;
  */
 
 public class DataBaseImpl implements DataBase {
+    private static DataBaseImpl Instance = null;
     private String jdbcUrl;
     private Connection conn;
     private PreparedStatement pstmt;
     private String ID, Password;
+    // TODO: 2020-01-01 마지막 IgCode PrCode 갖고 있어야 하지 않을까?
 
-
-    public DataBaseImpl(String ID, String Password, String IP) {
-        jdbcUrl = "jdbc://mysql://localhost/javadb";
-        this.ID = ID;
-        this.Password = Password;
-        this.jdbcUrl = "jdbc://mysql://" + IP + "/javadb";
+    public static DataBaseImpl getInstance(String ID, String Password) {
+        if (Instance == null) {
+            Instance = new DataBaseImpl(ID, Password);
+        }
+        return Instance;
     }
 
-    // FIXME: 2019-12-31 Fix IP Address
     public DataBaseImpl(String ID, String Password) {
-        jdbcUrl = "jdbc://mysql://localhost/javadb";
+        jdbcUrl = "jdbc:mysql://localhost/javadb?serverTimezone=UTC";
         this.ID = ID;
         this.Password = Password;
     }
 
-    private void connectDB() {
+    public boolean connectDB() {
+        boolean result = false;
         try {
             conn = DriverManager.getConnection(jdbcUrl, ID, Password);
+            result = true;
         } catch (SQLException e) {
             e.printStackTrace();
+            result = false;
         }
+        return result;
     }
 
     private void closeDB() {
@@ -72,7 +77,10 @@ public class DataBaseImpl implements DataBase {
 
     @Override
     public void registerProduct(JsonObject data_Product) {
-        connectDB();
+        if (!connectDB()) {
+            System.out.println("Connect DB is fail in DataBaseImpl at registerProduct");
+            System.out.println("Registration Product is fail");
+        }
         String sql = "insert into product values(?,?,?,?,?)";
 
         try {
@@ -92,7 +100,10 @@ public class DataBaseImpl implements DataBase {
 
     @Override
     public void registerIngredient(JsonObject data_Ingredient) {
-        connectDB();
+        if (!connectDB()) {
+            System.out.println("Connect DB is fail in DataBaseImpl at registerIngredient");
+            System.out.println("Registration Ingredient fail");
+        }
         String sql = "insert into ingredient values(?,?,?,?,?)";
 
         try {
@@ -108,11 +119,52 @@ public class DataBaseImpl implements DataBase {
         }
     }//registerIngredient
 
+    public boolean updateIngredient(JsonArray toupdate, String sign) {
+        boolean result = true;
+        connectDB();
+        for (JsonElement elem : toupdate) {
+            JsonObject obj = elem.getAsJsonObject();
+            String sql = "update ingredient set IgNumber = IgNumber " + sign + " " + obj.get("IgNumber") + " where IgCode = " + obj.get("IgCode");
+            try {
+                pstmt = conn.prepareStatement(sql);
+                pstmt.execute();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                result = false;
+            }
+        }
+        closeDB();
+        return result;
+    }
+
+    public boolean updateIngredient(JsonArray toupdate, int num) {
+        boolean result = true;
+        connectDB();
+        for (JsonElement elem : toupdate) {
+            JsonObject obj = elem.getAsJsonObject();
+            String sql = "update ingredient set IgNumber = IgNumber + " + (obj.get("IgNumber").getAsInt() * num) + " where IgCode = " + obj.get("IgCode");
+            try {
+                pstmt = conn.prepareStatement(sql);
+                pstmt.execute();
+            } catch (SQLException e) {
+                e.printStackTrace();
+                result = false;
+            }
+        }
+        closeDB();
+        return result;
+    }
+
+
     @Override
     public JsonArray getProductArray() {
-        connectDB();
+        if (!connectDB()) {
+            System.out.println("Connect DB is fail in DataBaseImpl at getProductArray");
+            return null;
+        }
         String sql = "select * from product";
         JsonArray result = new JsonArray();
+        JsonArray ingredient = getIngredientArray2();
         try {
             pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
@@ -124,6 +176,10 @@ public class DataBaseImpl implements DataBase {
                 input.addProperty("PrPrice", rs.getInt("PrPrice"));
                 input.addProperty("PrNumber", rs.getInt("PrNumber"));
                 input.addProperty("PrIngredient", rs.getString("PrIngredient"));
+                if (new DataTransform(ID, Password).isSell(input, ingredient))
+                    input.addProperty("IsSell", true);
+                else
+                    input.addProperty("IsSell", false);
                 result.add(input);
             }
             rs.close();
@@ -136,7 +192,10 @@ public class DataBaseImpl implements DataBase {
 
     @Override
     public JsonArray getIngredientArray() {
-        connectDB();
+        if (!connectDB()) {
+            System.out.println("Connect DB is fail in DataBaseImpl at getIngredientArray");
+            return null;
+        }
         String sql = "select * from ingredient";
         JsonArray result = new JsonArray();
         try {
@@ -159,5 +218,65 @@ public class DataBaseImpl implements DataBase {
         closeDB();
         return result;
     }//getIngredientArray
+
+    private JsonArray getIngredientArray2() {
+        String sql = "select * from ingredient";
+        JsonArray result = new JsonArray();
+        try {
+            pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+            JsonObject input;
+            while (rs.next()) {
+                input = new JsonObject();
+                input.addProperty("IgCode", rs.getInt("IgCode"));
+                input.addProperty("IgName", rs.getString("IgName"));
+                input.addProperty("IgNumber", rs.getInt("IgNumber"));
+                input.addProperty("IgPrice", rs.getInt("IgPrice"));
+                input.addProperty("IgProduct", rs.getString("IgProduct"));
+                result.add(input);
+            }
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }//getIngredientArray
+
+    public boolean addIngredient(int IgCode) {
+        // TODO: 2020-01-01 Code 추가하기
+        return true;
+    }
+
+    public int getTotal(){
+        int total = 0;
+        String sql = "select * from money";
+        try {
+            pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+            while(rs.next()){
+                total = rs.getInt("Total");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return total;
+    }
+
+    public JsonObject getMoney(){
+        String sql = "select * from money";
+        JsonObject result = new JsonObject();
+        try {
+            pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+            while(rs.next()){
+                result.addProperty("Expense",rs.getInt("Expense"));
+                result.addProperty("Income",rs.getInt("Income"));
+                result.addProperty("Total",rs.getInt("Total"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }//getMoney
 
 }// Class DataBase
