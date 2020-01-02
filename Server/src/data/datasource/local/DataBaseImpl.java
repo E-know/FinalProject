@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import javax.xml.crypto.Data;
 import java.sql.*;
 /*
     Database Info
@@ -54,7 +53,7 @@ public class DataBaseImpl implements DataBase {
         this.Password = Password;
     }
 
-    public boolean connectDB() {
+    private boolean connectDB() {
         boolean result = false;
         try {
             conn = DriverManager.getConnection(jdbcUrl, ID, Password);
@@ -119,6 +118,7 @@ public class DataBaseImpl implements DataBase {
         }
     }//registerIngredient
 
+    @Override
     public boolean updateIngredient(JsonArray toupdate, String sign) {
         boolean result = true;
         connectDB();
@@ -137,6 +137,7 @@ public class DataBaseImpl implements DataBase {
         return result;
     }
 
+    @Override
     public boolean updateIngredient(JsonArray toupdate, int num) {
         boolean result = true;
         connectDB();
@@ -155,7 +156,6 @@ public class DataBaseImpl implements DataBase {
         return result;
     }
 
-
     @Override
     public JsonArray getProductArray() {
         if (!connectDB()) {
@@ -164,7 +164,7 @@ public class DataBaseImpl implements DataBase {
         }
         String sql = "select * from product";
         JsonArray result = new JsonArray();
-        JsonArray ingredient = getIngredientArray2();
+        JsonArray ingredient = getIngredientArrayWithoutConnectServer();
         try {
             pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
@@ -219,7 +219,7 @@ public class DataBaseImpl implements DataBase {
         return result;
     }//getIngredientArray
 
-    private JsonArray getIngredientArray2() {
+    private JsonArray getIngredientArrayWithoutConnectServer() {
         String sql = "select * from ingredient";
         JsonArray result = new JsonArray();
         try {
@@ -242,13 +242,23 @@ public class DataBaseImpl implements DataBase {
         return result;
     }//getIngredientArray
 
+    @Override
     public boolean addIngredient(int IgCode) {
-        // TODO: 2020-01-01 Code 추가하기
+        String sql = "update money set Expense = Expense + ";
+        JsonArray ingreArr = getIngredientArray();
+        for (JsonElement elem : ingreArr) {
+            JsonObject obj = elem.getAsJsonObject();
+            if (obj.get("IgCode").getAsInt() == IgCode) {
+                // TODO: 2020-01-02 우선 데이터 스텁 
+            }
+        }
         return true;
     }
 
+    @Override
     public boolean reflectMoneyChange(int change) {
         String sql = "update money set ";
+        connectDB();
         if (change > 0)
             sql += "Income = Income" + change + " ";
         else
@@ -271,11 +281,14 @@ public class DataBaseImpl implements DataBase {
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Total Change is Fail");
+            closeDB();
             return false;
         }
+        closeDB();
         return true;
     }
 
+    @Override
     public JsonObject getMoney() {
         String sql = "select * from money";
         JsonObject result = new JsonObject();
@@ -293,9 +306,11 @@ public class DataBaseImpl implements DataBase {
         return result;
     }//getMoney
 
+    @Override
     public boolean changeProductNumber(JsonArray changeArr) {
         String sql = "upgrade  product set PrNumber = PrNumber + ";
         String perform = null;
+        connectDB();
         for (JsonElement elem : changeArr) {
             JsonObject obj = elem.getAsJsonObject();
             perform = obj.get("PrNumber").getAsString() + " where PrCode =" + obj.get("PrCode").getAsString();
@@ -305,9 +320,11 @@ public class DataBaseImpl implements DataBase {
             } catch (SQLException e) {
                 System.out.println("돈 PrNumber 변동에 실패했습니다.");
                 e.printStackTrace();
+                closeDB();
                 return false;
             }
         }
+        closeDB();
         return true;
     }
 

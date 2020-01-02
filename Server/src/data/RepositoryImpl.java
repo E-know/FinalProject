@@ -27,7 +27,6 @@ public class RepositoryImpl implements Repository {
         remote.openServer(new ServerCallback() {
             @Override
             public void login() {
-                //TODO 로컬로 연결후 성공하면
                 remote.sendData(local.getProductArray().toString());
             }
 

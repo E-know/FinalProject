@@ -128,7 +128,7 @@ public class DataTransform {
             System.out.println("재료 구매에 실패했습니다.");
     }
 
-    public boolean changeMoeny(JsonArray changeArr){
+    public boolean changeMoney(JsonArray changeArr){
         JsonArray productArr = DB.getProductArray();
         for(JsonElement elem : changeArr){
             JsonObject obj  = elem.getAsJsonObject();
