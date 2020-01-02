@@ -307,6 +307,7 @@ public class DataBaseImpl implements DataBase {
     public JsonObject getMoney() {
         String sql = "select * from money";
         JsonObject result = new JsonObject();
+        connectDB();
         try {
             pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
@@ -318,6 +319,7 @@ public class DataBaseImpl implements DataBase {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        closeDB();
         return result;
     }
 
@@ -344,14 +346,16 @@ public class DataBaseImpl implements DataBase {
     @Override
     public boolean changePrNumber(int PrCode,char sign) {
         String sql = "update product set PrNumber = PrNumber " + sign + " 1 where PrCode = " + PrCode;
-
+        connectDB();
         try {
             pstmt = conn.prepareStatement(sql);
             pstmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();
+            closeDB();
             return false;
         }
+        closeDB();
         return true;
     }
 }// Class DataBase

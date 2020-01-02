@@ -65,9 +65,10 @@ public class RepositoryImpl implements Repository {
             @Override
             public void total() {
                 JsonObject obj = new JsonObject();
-                obj.addProperty("total",local.getMoney().get("Total").getAsInt());
-                obj.addProperty("array",local.getProductArray().getAsString());
-                remote.sendData(obj.getAsString());
+                obj.addProperty("total",local.getMoney().get("Income").getAsInt());
+                String str = local.getProductArray().toString();
+                obj.addProperty("array",str);
+                remote.sendData(obj.toString());
             }
 
             @Override
