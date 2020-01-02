@@ -247,9 +247,9 @@ public class DataBaseImpl implements DataBase {
         return true;
     }
 
-    public boolean reflectMoneyChange(int change){
+    public boolean reflectMoneyChange(int change) {
         String sql = "update money set ";
-        if(change > 0)
+        if (change > 0)
             sql += "Income = Income" + change + " ";
         else
             sql += "Expense = Expense" + change + " ";
@@ -264,7 +264,7 @@ public class DataBaseImpl implements DataBase {
             return false;
         }
 
-        sql =  "update money set Total = Total +" + change;
+        sql = "update money set Total = Total +" + change;
         try {
             pstmt = conn.prepareStatement(sql);
             pstmt.execute();
@@ -292,5 +292,23 @@ public class DataBaseImpl implements DataBase {
         }
         return result;
     }//getMoney
+
+    public boolean changeProductNumber(JsonArray changeArr) {
+        String sql = "upgrade  product set PrNumber = PrNumber + ";
+        String perform = null;
+        for (JsonElement elem : changeArr) {
+            JsonObject obj = elem.getAsJsonObject();
+            perform = obj.get("PrNumber").getAsString() + " where PrCode =" + obj.get("PrCode").getAsString();
+            try {
+                pstmt = conn.prepareStatement(sql + perform);
+                pstmt.execute();
+            } catch (SQLException e) {
+                System.out.println("돈 PrNumber 변동에 실패했습니다.");
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return true;
+    }
 
 }// Class DataBase

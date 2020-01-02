@@ -134,6 +134,9 @@ public class DataTransform {
             JsonObject obj  = elem.getAsJsonObject();
             JsonObject productObj = returnProductObject(obj.get("PrCode").getAsInt(),productArr);
             int change = productObj.get("PrPrice").getAsInt() * obj.get("PrNumber").getAsInt();
+
+            // TODO: 2020-01-02 여기에 함수 호출 
+            
             if(DB.reflectMoneyChange(change))
                 System.out.println(obj.get("PrCode") + "의 돈 변경 완료");
             else {
@@ -141,7 +144,6 @@ public class DataTransform {
                 return false;
             }
         }
-
         return true;
     }
 
