@@ -12,7 +12,7 @@ public class DataTransform {
     private String ID;
     private String Password;
     private ArrayList<IngredientModel> ingredient;
-    private DataBaseImpl DB;
+    private DataBase DB;
 
     public DataTransform(String ID, String Password) {
         this.ID = ID;
@@ -128,12 +128,20 @@ public class DataTransform {
             System.out.println("재료 구매에 실패했습니다.");
     }
 
-    public boolean changeMoeny(JsonArray changeArr){
+    public boolean changeMoney(JsonArray changeArr){
         JsonArray productArr = DB.getProductArray();
         for(JsonElement elem : changeArr){
             JsonObject obj  = elem.getAsJsonObject();
             JsonObject productObj = returnProductObject(obj.get("PrCode").getAsInt(),productArr);
             int change = productObj.get("PrPrice").getAsInt() * obj.get("PrNumber").getAsInt();
+
+            if(DB.changeProductNumber(changeArr))
+                System.out.println(obj.get("PrCode") + "의 개수 변경 완료");
+            else{
+                System.out.println(obj.get("PrCode") + "의 개수 변경 실패 함수를 종료합니다");
+                return false;
+            }
+            
             if(DB.reflectMoneyChange(change))
                 System.out.println(obj.get("PrCode") + "의 돈 변경 완료");
             else {
@@ -141,7 +149,6 @@ public class DataTransform {
                 return false;
             }
         }
-
         return true;
     }
 
