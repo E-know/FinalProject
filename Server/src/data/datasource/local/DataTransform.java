@@ -128,6 +128,21 @@ public class DataTransform {
             System.out.println("재료 구매에 실패했습니다.");
     }
 
+    public boolean changeMoeny(JsonArray changeArr){
+        JsonArray productArr = DB.getProductArray();
+        for(JsonElement elem : changeArr){
+            JsonObject obj  = elem.getAsJsonObject();
+            JsonObject productObj = returnProductObject(obj.get("PrCode").getAsInt(),productArr);
+            int change = productObj.get("PrPrice").getAsInt() * obj.get("PrNumber").getAsInt();
+            if(DB.reflectMoneyChange(change))
+                System.out.println(obj.get("PrCode") + "의 돈 변경 완료");
+            else {
+                System.out.println(obj.get("PrCode") + "의 돈 변경 실패 DataTransform의 changeMoney 함수를 종료합니다.");
+                return false;
+            }
+        }
 
+        return true;
+    }
 
 }
