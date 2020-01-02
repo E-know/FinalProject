@@ -135,7 +135,12 @@ public class DataTransform {
             JsonObject productObj = returnProductObject(obj.get("PrCode").getAsInt(),productArr);
             int change = productObj.get("PrPrice").getAsInt() * obj.get("PrNumber").getAsInt();
 
-            // TODO: 2020-01-02 여기에 함수 호출 
+            if(DB.changeProductNumber(changeArr))
+                System.out.println(obj.get("PrCode") + "의 개수 변경 완료");
+            else{
+                System.out.println(obj.get("PrCode") + "의 개수 변경 실패 함수를 종료합니다");
+                return false;
+            }
             
             if(DB.reflectMoneyChange(change))
                 System.out.println(obj.get("PrCode") + "의 돈 변경 완료");
