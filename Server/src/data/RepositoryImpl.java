@@ -63,7 +63,7 @@ public class RepositoryImpl implements Repository {
 
             @Override
             public void total() {
-                //TODO 총 매출 관련된 것
+                remote.sendData(local.getMoney().get("Total").toString());
             }
 
             @Override

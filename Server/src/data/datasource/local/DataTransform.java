@@ -64,6 +64,7 @@ public class DataTransform {
             }
         }
         DB.updateIngredient(toUpdate, "-");
+        DB.changePrNumber(PrCode,'+');
         return true;
     }
 
@@ -71,8 +72,10 @@ public class DataTransform {
         JsonArray productArr = DB.getProductArray();
         JsonArray needArr = returnIngredient(returnProductObject(PrCode, productArr));
         if (needArr.isJsonNull()) return false;
-        if (DB.updateIngredient(needArr, "+"))
+        if (DB.updateIngredient(needArr, "+")) {
             System.out.println("취소에 성공했습니다.");
+            DB.changePrNumber(PrCode,'-');
+        }
         else
             System.out.println("취소에 실패했습니다.");
         return true;
@@ -127,28 +130,6 @@ public class DataTransform {
             System.out.println("재료 구매에 실패했습니다.");
     }
 
-    public boolean changeMoney(JsonArray changeArr) {
-        JsonArray productArr = DB.getProductArray();
-        for (JsonElement elem : changeArr) {
-            JsonObject obj = elem.getAsJsonObject();
-            JsonObject productObj = returnProductObject(obj.get("PrCode").getAsInt(), productArr);
-            int change = productObj.get("PrPrice").getAsInt() * obj.get("PrNumber").getAsInt();
 
-            if (DB.changeProductNumber(changeArr))
-                System.out.println(obj.get("PrCode") + "의 개수 변경 완료");
-            else {
-                System.out.println(obj.get("PrCode") + "의 개수 변경 실패 함수를 종료합니다");
-                return false;
-            }
-
-            if (DB.reflectMoneyChange(change))
-                System.out.println(obj.get("PrCode") + "의 돈 변경 완료");
-            else {
-                System.out.println(obj.get("PrCode") + "의 돈 변경 실패 DataTransform의 changeMoney 함수를 종료합니다.");
-                return false;
-            }
-        }
-        return true;
-    }
 
 }

@@ -342,25 +342,16 @@ public class DataBaseImpl implements DataBase {
     }
 
     @Override
-    public boolean changeProductNumber(JsonArray changeArr) {
-        String sql = "upgrade  product set PrNumber = PrNumber + ";
-        String perform = null;
-        connectDB();
-        for (JsonElement elem : changeArr) {
-            JsonObject obj = elem.getAsJsonObject();
-            perform = obj.get("PrNumber").getAsString() + " where PrCode =" + obj.get("PrCode").getAsString();
-            try {
-                pstmt = conn.prepareStatement(sql + perform);
-                pstmt.execute();
-            } catch (SQLException e) {
-                System.out.println("돈 PrNumber 변동에 실패했습니다.");
-                e.printStackTrace();
-                closeDB();
-                return false;
-            }
+    public boolean changePrNumber(int PrCode,char sign) {
+        String sql = "update product set PrNumber = PrNumber " + sign + " 1 where PrCode = " + PrCode;
+
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
-        closeDB();
         return true;
     }
-
 }// Class DataBase
