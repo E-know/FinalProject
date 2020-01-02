@@ -48,9 +48,15 @@ public class RepositoryImpl implements Repository {
             @Override
             public void exitCallback(String select, int count) {
                 System.out.println(select);
-                new DataTransform("java7","java8").removeBasket(Integer.parseInt(select),count);
+                new DataTransform("java7", "java8").removeBasket(Integer.parseInt(select), count);
                 remote.sendData(local.getProductArray().toString());
             }
+
+            @Override
+            public void buy() {
+
+            }
+
 
             @Override
             public void error() {
