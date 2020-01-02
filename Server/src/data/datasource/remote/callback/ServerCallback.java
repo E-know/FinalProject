@@ -11,5 +11,7 @@ public interface ServerCallback {
 
     void buy(int total);
 
+    void ingredient();
+
     void error();
 }
