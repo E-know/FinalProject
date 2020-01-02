@@ -3,6 +3,7 @@ package data.datasource.local;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mysql.cj.protocol.Resultset;
 
 import java.sql.*;
 /*
@@ -243,14 +244,29 @@ public class DataBaseImpl implements DataBase {
 
     @Override
     public boolean addIngredient(int IgCode) {
-        String sql = "update money set Expense = Expense + ";
-        JsonArray ingreArr = getIngredientArray();
-        for (JsonElement elem : ingreArr) {
-            JsonObject obj = elem.getAsJsonObject();
-            if (obj.get("IgCode").getAsInt() == IgCode) {
-                // TODO: 2020-01-02 우선 데이터 스텁 
-            }
+        String sql = "update ingredient set IgNumber = IgNumber + 100 where IgCode = " + IgCode;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
+        sql = "select * from ingredient where IgCode = " + IgCode;
+
+        try {
+            pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+            int price = rs.getInt("IgPrice");
+
+            sql = "update money set Total = Total -" + price;
+            pstmt = conn.prepareStatement(sql);
+            pstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
         return true;
     }
 
@@ -309,6 +325,13 @@ public class DataBaseImpl implements DataBase {
     public void changeTotal(int total){
         String sql = "update money set Total = Total +" + total;
         connectDB();
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        sql = "update money set Income = Income + " + total;
         try {
             pstmt = conn.prepareStatement(sql);
             pstmt.execute();
