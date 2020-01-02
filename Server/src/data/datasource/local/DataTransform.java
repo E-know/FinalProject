@@ -12,7 +12,7 @@ public class DataTransform {
     private String ID;
     private String Password;
     private ArrayList<IngredientModel> ingredient;
-    private DataBaseImpl DB;
+    private DataBase DB;
 
     public DataTransform(String ID, String Password) {
         this.ID = ID;

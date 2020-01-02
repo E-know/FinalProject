@@ -38,7 +38,6 @@ public class DataBaseImpl implements DataBase {
     private Connection conn;
     private PreparedStatement pstmt;
     private String ID, Password;
-    // TODO: 2020-01-01 마지막 IgCode PrCode 갖고 있어야 하지 않을까?
 
     public static DataBaseImpl getInstance(String ID, String Password) {
         if (Instance == null) {
