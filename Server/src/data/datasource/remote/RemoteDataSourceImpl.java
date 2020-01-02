@@ -39,6 +39,8 @@ public class RemoteDataSourceImpl implements RemoteDataSource {
                 callback.buy(object.get("buy").getAsInt());
             } else if (object.get("ingredient") != null) {
                 callback.ingredient();
+            } else if (object.get("total") != null) {
+                callback.total();
             } else {
                 callback.error();
             }

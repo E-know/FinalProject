@@ -13,5 +13,7 @@ public interface ServerCallback {
 
     void ingredient();
 
+    void total();
+
     void error();
 }
