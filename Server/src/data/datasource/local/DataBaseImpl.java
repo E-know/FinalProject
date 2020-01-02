@@ -247,31 +247,45 @@ public class DataBaseImpl implements DataBase {
         return true;
     }
 
-    public int getTotal(){
-        int total = 0;
-        String sql = "select * from money";
+    public boolean reflectMoneyChange(int change){
+        String sql = "update money set ";
+        if(change > 0)
+            sql += "Income = Income" + change + " ";
+        else
+            sql += "Expense = Expense" + change + " ";
+
+
         try {
             pstmt = conn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-            while(rs.next()){
-                total = rs.getInt("Total");
-            }
+            pstmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();
+            System.out.println("Expense or Income change Fail");
+            return false;
         }
-        return total;
+
+        sql =  "update money set Total = Total +" + change;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Total Change is Fail");
+            return false;
+        }
+        return true;
     }
 
-    public JsonObject getMoney(){
+    public JsonObject getMoney() {
         String sql = "select * from money";
         JsonObject result = new JsonObject();
         try {
             pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
-            while(rs.next()){
-                result.addProperty("Expense",rs.getInt("Expense"));
-                result.addProperty("Income",rs.getInt("Income"));
-                result.addProperty("Total",rs.getInt("Total"));
+            while (rs.next()) {
+                result.addProperty("Expense", rs.getInt("Expense"));
+                result.addProperty("Income", rs.getInt("Income"));
+                result.addProperty("Total", rs.getInt("Total"));
             }
         } catch (SQLException e) {
             e.printStackTrace();

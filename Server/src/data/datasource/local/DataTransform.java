@@ -36,9 +36,8 @@ public class DataTransform {
         return result;
     }
 
-    public JsonObject returnProductObject(int PrCode) {
-        JsonArray arr = DB.getProductArray();
-        for (JsonElement obj : arr) {
+    public JsonObject returnProductObject(int PrCode,JsonArray productArray) {
+        for (JsonElement obj : productArray) {
             if (obj.getAsJsonObject().get("PrCode").getAsInt() == PrCode) {
                 return obj.getAsJsonObject();
             }
@@ -47,7 +46,8 @@ public class DataTransform {
     }
 
     public boolean buyProduct(int PrCode) {
-        JsonArray needArr = returnIngredient(returnProductObject(PrCode));
+        JsonArray productArr = DB.getProductArray();
+        JsonArray needArr = returnIngredient(returnProductObject(PrCode,productArr));
         if (needArr.isJsonNull()) return false;
 
         JsonArray ingredientArr = DB.getIngredientArray();
@@ -69,7 +69,8 @@ public class DataTransform {
     }
 
     public boolean cancelProduct(int PrCode) {
-        JsonArray needArr = returnIngredient(returnProductObject(PrCode));
+        JsonArray productArr = DB.getProductArray();
+        JsonArray needArr = returnIngredient(returnProductObject(PrCode,productArr));
         if (needArr.isJsonNull()) return false;
         if (DB.updateIngredient(needArr, "+"))
             System.out.println("취소에 성공했습니다.");
@@ -78,14 +79,14 @@ public class DataTransform {
         return true;
     }
 
-    public boolean removeBasket(int PrCode,int num){
-        JsonArray needArr = returnIngredient(returnProductObject(PrCode));
-        if(needArr.isJsonNull()) return false;
-        if(DB.updateIngredient(needArr,num)){
+    public boolean removeBasket(int PrCode, int num) {
+        JsonArray productArr = DB.getProductArray();
+        JsonArray needArr = returnIngredient(returnProductObject(PrCode,productArr));
+        if (needArr.isJsonNull()) return false;
+        if (DB.updateIngredient(needArr, num)) {
             System.out.println("장바구니에 취소에서 재료 값 변동되었습니다");
             return true;
-        }
-        else {
+        } else {
             System.out.println("장바구니에서 재료 변동이 실패했습니다.");
             return false;
         }
@@ -126,5 +127,7 @@ public class DataTransform {
         else
             System.out.println("재료 구매에 실패했습니다.");
     }
+
+
 
 }
