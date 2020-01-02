@@ -3,5 +3,8 @@ package data;
 public interface Repository {
     void connectClient();
 
-    void connectDataBase();
+    void broadCastClients(String data);
+
+
+    void closeServer();
 }

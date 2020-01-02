@@ -1,36 +1,56 @@
 package data.datasource.remote;
 
-import data.datasource.remote.server.Server;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import data.datasource.remote.callback.ServerCallback;
+import data.datasource.remote.network.Server;
 
 import java.io.IOException;
 
 public class RemoteDataSourceImpl implements RemoteDataSource {
     private static RemoteDataSource INSTANCE = null;
     private Server server;
+    private JsonParser parser = new JsonParser();
 
     private RemoteDataSourceImpl(Server server) {
         this.server = server;
-        try {
-            String ip = server.initServer();
-            System.out.println("서버 연결 성공 : " + ip);
-        } catch (IOException e) {
-            System.out.println("서버 연결 오류" + e.getMessage());
-        }
+    }
+
+    public static RemoteDataSource getInstance(final Server server) {
+        if (INSTANCE == null) INSTANCE = new RemoteDataSourceImpl(server);
+        return INSTANCE;
     }
 
     @Override
-    public void openServer(Server.ReceiveListener listener) {
-        try {
-            //데이터 들어오는 부분
-            server.startServer(listener);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void openServer(ServerCallback callback) {
+        server.startServer();
+        server.ReceiveData(data -> {
+            JsonObject object = parser.parse(data).getAsJsonObject();
+            System.out.println(object.toString());
+            if (object.get("login") != null) {
+                callback.login();
+            } else if (object.get("select") != null) {
+                callback.selectItem(object.get("select").toString());
+            } else if (object.get("minus") != null) {
+                callback.minusItem(object.get("minus").toString());
+            } else if (object.get("exit") != null) {
+                callback.exitCallback(object.get("exit").toString(), object.get("count").getAsInt());
+            } else {
+                callback.error();
+            }
+
+        });
+
     }
 
-    public static RemoteDataSource getInstance(Server server) {
-        if (INSTANCE == null) INSTANCE = new RemoteDataSourceImpl(server);
-        return INSTANCE;
+    @Override
+    public void sendData(final String data) {
+        server.send(data);
+    }
+
+    @Override
+    public void closeServer() throws IOException {
+        server.close();
     }
 
 }
