@@ -12,6 +12,7 @@ public class Server extends Thread {
     private Socket clientSocket;
     private BufferedReader reader;
     private PrintWriter writer;
+    private Thread receiveThread;
 
     public Server() {
 
@@ -50,7 +51,7 @@ public class Server extends Thread {
     }
 
     public void ReceiveData(ReceiveCallback callback) {
-        new Thread(() -> {
+        receiveThread = new Thread(() -> {
             try {
                 while (!this.isInterrupted()) {
                     callback.accept(reader.readLine());
@@ -59,7 +60,9 @@ public class Server extends Thread {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
+        receiveThread.start();
+
     }
 
     public synchronized void send(String data) {
@@ -67,6 +70,7 @@ public class Server extends Thread {
     }
 
     public void close() throws IOException {
+        if (!receiveThread.isInterrupted()) receiveThread.interrupt();
         reader.close();
         writer.close();
         clientSocket.close();

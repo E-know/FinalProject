@@ -1,6 +1,5 @@
 package data.datasource.local;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -36,7 +35,7 @@ public class DataTransform {
         return result;
     }
 
-    public JsonObject returnProductObject(int PrCode,JsonArray productArray) {
+    public JsonObject returnProductObject(int PrCode, JsonArray productArray) {
         for (JsonElement obj : productArray) {
             if (obj.getAsJsonObject().get("PrCode").getAsInt() == PrCode) {
                 return obj.getAsJsonObject();
@@ -47,7 +46,7 @@ public class DataTransform {
 
     public boolean buyProduct(int PrCode) {
         JsonArray productArr = DB.getProductArray();
-        JsonArray needArr = returnIngredient(returnProductObject(PrCode,productArr));
+        JsonArray needArr = returnIngredient(returnProductObject(PrCode, productArr));
         if (needArr.isJsonNull()) return false;
 
         JsonArray ingredientArr = DB.getIngredientArray();
@@ -70,7 +69,7 @@ public class DataTransform {
 
     public boolean cancelProduct(int PrCode) {
         JsonArray productArr = DB.getProductArray();
-        JsonArray needArr = returnIngredient(returnProductObject(PrCode,productArr));
+        JsonArray needArr = returnIngredient(returnProductObject(PrCode, productArr));
         if (needArr.isJsonNull()) return false;
         if (DB.updateIngredient(needArr, "+"))
             System.out.println("취소에 성공했습니다.");
@@ -81,7 +80,7 @@ public class DataTransform {
 
     public boolean removeBasket(int PrCode, int num) {
         JsonArray productArr = DB.getProductArray();
-        JsonArray needArr = returnIngredient(returnProductObject(PrCode,productArr));
+        JsonArray needArr = returnIngredient(returnProductObject(PrCode, productArr));
         if (needArr.isJsonNull()) return false;
         if (DB.updateIngredient(needArr, num)) {
             System.out.println("장바구니에 취소에서 재료 값 변동되었습니다");
@@ -128,21 +127,21 @@ public class DataTransform {
             System.out.println("재료 구매에 실패했습니다.");
     }
 
-    public boolean changeMoney(JsonArray changeArr){
+    public boolean changeMoney(JsonArray changeArr) {
         JsonArray productArr = DB.getProductArray();
-        for(JsonElement elem : changeArr){
-            JsonObject obj  = elem.getAsJsonObject();
-            JsonObject productObj = returnProductObject(obj.get("PrCode").getAsInt(),productArr);
+        for (JsonElement elem : changeArr) {
+            JsonObject obj = elem.getAsJsonObject();
+            JsonObject productObj = returnProductObject(obj.get("PrCode").getAsInt(), productArr);
             int change = productObj.get("PrPrice").getAsInt() * obj.get("PrNumber").getAsInt();
 
-            if(DB.changeProductNumber(changeArr))
+            if (DB.changeProductNumber(changeArr))
                 System.out.println(obj.get("PrCode") + "의 개수 변경 완료");
-            else{
+            else {
                 System.out.println(obj.get("PrCode") + "의 개수 변경 실패 함수를 종료합니다");
                 return false;
             }
-            
-            if(DB.reflectMoneyChange(change))
+
+            if (DB.reflectMoneyChange(change))
                 System.out.println(obj.get("PrCode") + "의 돈 변경 완료");
             else {
                 System.out.println(obj.get("PrCode") + "의 돈 변경 실패 DataTransform의 changeMoney 함수를 종료합니다.");
