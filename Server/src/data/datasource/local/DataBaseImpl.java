@@ -303,7 +303,20 @@ public class DataBaseImpl implements DataBase {
             e.printStackTrace();
         }
         return result;
-    }//getMoney
+    }
+
+    @Override
+    public void changeTotal(int total){
+        String sql = "update money set Total = Total +" + total;
+        connectDB();
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        closeDB();
+    }
 
     @Override
     public boolean changeProductNumber(JsonArray changeArr) {

@@ -26,4 +26,6 @@ public interface DataBase {
     JsonObject getMoney();
 
     boolean changeProductNumber(JsonArray changeArr);
+
+    void changeTotal(int total);
 }

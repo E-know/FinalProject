@@ -50,12 +50,10 @@ public class RepositoryImpl implements Repository {
                 new DataTransform("java7", "java8").removeBasket(Integer.parseInt(select), count);
                 remote.sendData(local.getProductArray().toString());
             }
-
             @Override
-            public void buy() {
-
+            public void buy(int total) {
+                local.changeTotal(total);
             }
-
 
             @Override
             public void error() {
