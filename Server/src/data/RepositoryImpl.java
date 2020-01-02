@@ -1,5 +1,6 @@
 package data;
 
+import com.google.gson.JsonObject;
 import data.datasource.local.DataBase;
 import data.datasource.local.DataTransform;
 import data.datasource.remote.RemoteDataSource;
@@ -63,7 +64,10 @@ public class RepositoryImpl implements Repository {
 
             @Override
             public void total() {
-                remote.sendData(local.getMoney().get("Total").toString());
+                JsonObject obj = new JsonObject();
+                obj.addProperty("total",local.getMoney().get("Total").getAsInt());
+                obj.addProperty("array",local.getProductArray().getAsString());
+                remote.sendData(obj.getAsString());
             }
 
             @Override
