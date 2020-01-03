@@ -1,5 +1,6 @@
 package data;
 
+import com.google.gson.JsonObject;
 import data.datasource.local.DataBase;
 import data.datasource.local.DataTransform;
 import data.datasource.remote.RemoteDataSource;
@@ -42,7 +43,6 @@ public class RepositoryImpl implements Repository {
         remote.openServer(new ServerCallback() {
             @Override
             public void login() {
-                //TODO 로컬로 연결후 성공하면
                 remote.sendData(local.getProductArray().toString());
             }
 
@@ -68,10 +68,23 @@ public class RepositoryImpl implements Repository {
             }
 
             @Override
-            public void buy() {
-
+            public void buy(int total) {
+                local.changeTotal(total);
             }
 
+            @Override
+            public void ingredient() {
+                remote.sendData(local.getIngredientArray().toString());
+            }
+
+            @Override
+            public void total() {
+                JsonObject obj = new JsonObject();
+                obj.addProperty("total",local.getMoney().get("Income").getAsInt());
+                String str = local.getProductArray().toString();
+                obj.addProperty("array",str);
+                remote.sendData(obj.toString());
+            }
 
             @Override
             public void error() {
