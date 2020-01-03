@@ -6,6 +6,9 @@ import data.Repository;
 import data.datasource.remote.RemoteDataSource;
 
 public interface DataBase {
+    /*
+    Interface의 대한 Comment는 DataBaseImpl 를 참조하시길 바랍니다.
+     */
 
     void registerProduct(JsonObject data_Product);//registerProduct
 
