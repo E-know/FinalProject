@@ -15,4 +15,17 @@ public interface DataBase {
 
     JsonArray getProductArray();
 
+    boolean updateIngredient(JsonArray toupdate, String sign);
+
+    boolean updateIngredient(JsonArray toupdate, int num);
+
+    boolean addIngredient(int IgCode);
+
+    boolean reflectMoneyChange(int change);
+
+    JsonObject getMoney();
+
+    void changeTotal(int total);
+
+    boolean changePrNumber(int PrCode,char sign);
 }

@@ -9,5 +9,11 @@ public interface ServerCallback {
 
     void exitCallback(String select, int count);
 
+    void buy(int total);
+
+    void ingredient();
+
+    void total();
+
     void error();
 }

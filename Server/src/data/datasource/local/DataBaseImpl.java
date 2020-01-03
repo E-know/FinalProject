@@ -3,8 +3,8 @@ package data.datasource.local;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mysql.cj.protocol.Resultset;
 
-import javax.xml.crypto.Data;
 import java.sql.*;
 /*
     Database Info
@@ -39,7 +39,6 @@ public class DataBaseImpl implements DataBase {
     private Connection conn;
     private PreparedStatement pstmt;
     private String ID, Password;
-    // TODO: 2020-01-01 마지막 IgCode PrCode 갖고 있어야 하지 않을까?
 
     public static DataBaseImpl getInstance(String ID, String Password) {
         if (Instance == null) {
@@ -54,7 +53,7 @@ public class DataBaseImpl implements DataBase {
         this.Password = Password;
     }
 
-    public boolean connectDB() {
+    private boolean connectDB() {
         boolean result = false;
         try {
             conn = DriverManager.getConnection(jdbcUrl, ID, Password);
@@ -119,6 +118,7 @@ public class DataBaseImpl implements DataBase {
         }
     }//registerIngredient
 
+    @Override
     public boolean updateIngredient(JsonArray toupdate, String sign) {
         boolean result = true;
         connectDB();
@@ -137,6 +137,7 @@ public class DataBaseImpl implements DataBase {
         return result;
     }
 
+    @Override
     public boolean updateIngredient(JsonArray toupdate, int num) {
         boolean result = true;
         connectDB();
@@ -155,7 +156,6 @@ public class DataBaseImpl implements DataBase {
         return result;
     }
 
-
     @Override
     public JsonArray getProductArray() {
         if (!connectDB()) {
@@ -164,7 +164,7 @@ public class DataBaseImpl implements DataBase {
         }
         String sql = "select * from product";
         JsonArray result = new JsonArray();
-        JsonArray ingredient = getIngredientArray2();
+        JsonArray ingredient = getIngredientArrayWithoutConnectServer();
         try {
             pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
@@ -219,7 +219,7 @@ public class DataBaseImpl implements DataBase {
         return result;
     }//getIngredientArray
 
-    private JsonArray getIngredientArray2() {
+    private JsonArray getIngredientArrayWithoutConnectServer() {
         String sql = "select * from ingredient";
         JsonArray result = new JsonArray();
         try {
@@ -242,41 +242,120 @@ public class DataBaseImpl implements DataBase {
         return result;
     }//getIngredientArray
 
+    @Override
     public boolean addIngredient(int IgCode) {
-        // TODO: 2020-01-01 Code 추가하기
+        String sql = "update ingredient set IgNumber = IgNumber + 100 where IgCode = " + IgCode;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+        sql = "select * from ingredient where IgCode = " + IgCode;
+
+        try {
+            pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery();
+            int price = rs.getInt("IgPrice");
+
+            sql = "update money set Total = Total -" + price;
+            pstmt = conn.prepareStatement(sql);
+            pstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
         return true;
     }
 
-    public int getTotal(){
-        int total = 0;
-        String sql = "select * from money";
+    @Override
+    public boolean reflectMoneyChange(int change) {
+        String sql = "update money set ";
+        connectDB();
+        if (change > 0)
+            sql += "Income = Income" + change + " ";
+        else
+            sql += "Expense = Expense" + change + " ";
+
+
         try {
             pstmt = conn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-            while(rs.next()){
-                total = rs.getInt("Total");
-            }
+            pstmt.execute();
         } catch (SQLException e) {
             e.printStackTrace();
+            System.out.println("Expense or Income change Fail");
+            return false;
         }
-        return total;
+
+        sql = "update money set Total = Total +" + change;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Total Change is Fail");
+            closeDB();
+            return false;
+        }
+        closeDB();
+        return true;
     }
 
-    public JsonObject getMoney(){
+    @Override
+    public JsonObject getMoney() {
         String sql = "select * from money";
         JsonObject result = new JsonObject();
+        connectDB();
         try {
             pstmt = conn.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
-            while(rs.next()){
-                result.addProperty("Expense",rs.getInt("Expense"));
-                result.addProperty("Income",rs.getInt("Income"));
-                result.addProperty("Total",rs.getInt("Total"));
+            while (rs.next()) {
+                result.addProperty("Expense", rs.getInt("Expense"));
+                result.addProperty("Income", rs.getInt("Income"));
+                result.addProperty("Total", rs.getInt("Total"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        closeDB();
         return result;
-    }//getMoney
+    }
 
+    @Override
+    public void changeTotal(int total){
+        String sql = "update money set Total = Total +" + total;
+        connectDB();
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        sql = "update money set Income = Income + " + total;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        closeDB();
+    }
+
+    @Override
+    public boolean changePrNumber(int PrCode,char sign) {
+        String sql = "update product set PrNumber = PrNumber " + sign + " 1 where PrCode = " + PrCode;
+        connectDB();
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.execute();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            closeDB();
+            return false;
+        }
+        closeDB();
+        return true;
+    }
 }// Class DataBase
