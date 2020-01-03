@@ -52,6 +52,7 @@ public class DataBaseImpl implements DataBase {
         this.ID = ID;
         this.Password = Password;
     }
+
     /*
     이름 : connectDB
     설명 : Mysql에 연결해주는 함수 실패시 false를 반환한다.
@@ -76,6 +77,7 @@ public class DataBaseImpl implements DataBase {
             e.printStackTrace();
         }
     }
+
     /*
     이름 : registerProduct
     파라미터 : JsonObject : 제품 데이터 [ PrCode PrName PrPrice PrNumber PrIngredient]
@@ -155,6 +157,7 @@ public class DataBaseImpl implements DataBase {
         closeDB();
         return result;
     }
+
     /*
     이름 : updateIngredient
     파라미터 :  JsonArray - 최산화 할 JsonArray [ IgCode , IgNumber] 로 이루어진 배열
@@ -180,6 +183,7 @@ public class DataBaseImpl implements DataBase {
         closeDB();
         return result;
     }
+
     /*
     이름 : getProductArray
     설명 : DB속 product Table의 모든 값을 JsonArray 형태로 반환해준다.
@@ -337,13 +341,14 @@ public class DataBaseImpl implements DataBase {
         closeDB();
         return result;
     }
+
     /*
     이름 : changeTotal
     파라미터 :  int - 변화량
     설명 : money Table 속 total 의 값을 파라미터 값 만큼 변화시킨다.
     */
     @Override
-    public void changeTotal(int total){
+    public void changeTotal(int total) {
         String sql = "update money set Total = Total +" + total;
         connectDB();
         try {
@@ -361,6 +366,7 @@ public class DataBaseImpl implements DataBase {
         }
         closeDB();
     }
+
     /*
     이름 : changePrNumber
     파라미터 :  PrCode - 변화를 원하는 PrCode
@@ -368,7 +374,7 @@ public class DataBaseImpl implements DataBase {
     설명 : product Table 속 PrCode와 일치하는 row의 PrNumber를 1(Plus or Minus) 시킨다.
     */
     @Override
-    public boolean changePrNumber(int PrCode,char sign) {
+    public boolean changePrNumber(int PrCode, char sign) {
         String sql = "update product set PrNumber = PrNumber " + sign + " 1 where PrCode = " + PrCode;
         connectDB();
         try {
