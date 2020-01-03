@@ -7,6 +7,11 @@ import data.datasource.remote.network.Server;
 
 import java.io.IOException;
 
+/**
+ * 서버와 연결하고 데이터를 조작하는 클래스
+ *
+ * @author 조재영
+ */
 public class RemoteDataSourceImpl implements RemoteDataSource {
     private static RemoteDataSource INSTANCE = null;
     private Server server;
@@ -21,6 +26,11 @@ public class RemoteDataSourceImpl implements RemoteDataSource {
         return INSTANCE;
     }
 
+    /**
+     * 데이터를 받아 변환, 정리 후 상위 레이어로 돌려준다.
+     *
+     * @param callback
+     */
     @Override
     public void openServer(ServerCallback callback) {
         server.startServer();
