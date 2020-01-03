@@ -8,11 +8,22 @@ import data.datasource.remote.callback.ServerCallback;
 
 import java.io.IOException;
 
+/**
+ * Remote와 local에 대한 정보를 담고있는 클래스
+ *
+ * @author 조재영
+ */
 public class RepositoryImpl implements Repository {
     private static Repository INSTANCE = null;
     private DataBase local;
     private RemoteDataSource remote;
 
+    /**
+     * 기본 생성자
+     *
+     * @param local  DataBase 연결을 위한 LocalDataSource
+     * @param remote Client와 연결을 위한 RemoteDataSource
+     */
     private RepositoryImpl(DataBase local, RemoteDataSource remote) {
         this.local = local;
         this.remote = remote;
@@ -23,6 +34,10 @@ public class RepositoryImpl implements Repository {
         return INSTANCE;
     }
 
+    /**
+     * 서버를 열고 대기하는 함수
+     * 서버의 controller 역할을 하고있는 부분
+     */
     @Override
     public void connectClient() {
         remote.openServer(new ServerCallback() {
