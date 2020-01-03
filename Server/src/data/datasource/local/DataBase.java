@@ -21,8 +21,6 @@ public interface DataBase {
 
     boolean addIngredient(int IgCode);
 
-    boolean reflectMoneyChange(int change);
-
     JsonObject getMoney();
 
     void changeTotal(int total);
