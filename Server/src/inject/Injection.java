@@ -8,6 +8,12 @@ import data.datasource.remote.RemoteDataSource;
 import data.datasource.remote.RemoteDataSourceImpl;
 import data.datasource.remote.network.Server;
 
+/**
+ * 의존성 주입을 위한 클래스
+ * 모든 클래스들의 의존관계를 여기서 관리한다.
+ *
+ * @author 조재영
+ */
 public class Injection implements Injector {
     private static Injection INSTANCE = null;
 
@@ -33,7 +39,7 @@ public class Injection implements Injector {
 
     @Override
     public DataBase injectLocalDataSource() {
-        if (local == null) local = DataBaseImpl.getInstance("java7","java8");
+        if (local == null) local = DataBaseImpl.getInstance("java7", "java8");
         return local;
     }
 
